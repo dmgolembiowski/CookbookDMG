@@ -1,0 +1,45 @@
+"""
+Python Cookbook >>> by David Beazley & Bian K. Jones
+"""
+
+# Keeping the last N terms: Spz you want to have a limited history of the last few items seen 
+# during iteration or during some other kind of processing. Then use collections.deque
+"""
+from collections import deque
+
+def search(lines, pattern, history=10)
+    previous_lines = deque(maxlen=history)
+    for line in lines:
+        if pattern in line:
+            yield line, previous_lines
+        previous_lines.append(line)
+# Example use on file
+if __name__ == '__main__':
+    with open('somefile.txt') as f:
+        for line, prevlines in search(f, 'python', 10)
+            for pline in prevlines:
+                print(pline, end='')
+            print(line, end='')
+            print('-'*20)
+            
+"""
+# Matching Text at the Start or End of a String
+"""
+# Spz you need to check the start or end of a string for specific text patterns such as filename extensions, URL schemes, etc.
+# The simple soln. is to use str.startswith() or str.endswith() methods.
+""" Let's see it in action:
+>>> filename = 'spam.txt'
+>>> filename.endswith('.txt')
+True
+>>> filename.startswith('file:')
+False
+>>> url = 'http://www.pythonj.org'
+>>> url.startswith('http:')
+True
+
+# If you needed to check for multiple choices, then give a tuple of of possibilities to startwith() or endswith()
+>>> import os
+>>> filenames = os.listdir('.')
+>>> filenames
+['Makefile', 'foo.c', 'bar.py', 'spam.c', 'spam.h']
+"""
