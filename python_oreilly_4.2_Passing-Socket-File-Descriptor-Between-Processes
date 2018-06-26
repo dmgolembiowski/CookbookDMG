@@ -1,0 +1,156 @@
+"""
+(Go back to 4.1 for context if needed)
+Passing file descriptors between processes is something many programmers don't realize is possible. But, it can sometimes help with building scalable systems. For ex, on a multicore machine, you could have multiple instances of the Python interpreter and use file descriptor passing to more evenly balance the number of clients being handled by each interpreter.
+
+The send_handle() and recv_handle() functions shown in 4.1's solution really only work with multiprocessing connections. Instead of using a pipe, you can connect in-sockets or Windows pipes. I.E. you could implement the server and worker as completely separate programs to be started separately:
+"""
+# servermp.py
+from multiprocessing.connection import Listener
+from multiprocessing.reduction import send_handle
+import socket
+
+def server(work_address, port):
+    # Wait for the worker to connect
+    work_serv = Listener(work_address, authkey=b'peekaboo')
+    worker = work_serv.accept()
+    worker_pid = worker.recv()
+    
+    # Now run a TCP/IP server and send clients to worker
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
+    sbind(('', port))
+    s.listen(1)
+    while True:
+        client, addr = s.accept()
+        print('SERVER: Got connection from', addr)
+        send_handle(worker, client.fileno(), worker_pid)
+        client.close()
+        
+    if __name__ == '__main__':
+        import sys
+        if len(sys.argv) != 3:
+            print('Usage: server.py server_address port', file=sys.stderr)
+            raise SystemExit(1)
+            
+        server(sys.argv[1], int(sys.argv[2]))
+
+"""
+To run this server, you would run a command such as "python3 servermp.py /tmp/servconn 15000
+Here is the corresponding client code:
+"""
+# workermp.py
+
+from multiprocessing.connection import Client
+from multiprocessing.reduction import recv_handle
+import os
+from socket import socket, AF_INET, SOCK_STREAM
+
+def worker(server_address):
+    serv = Client(server_address, authkey=b'peekaboo')
+    serv.send(os.getpid())
+    while True:
+        fd = recv_handle(serv)
+        print('WORKER: GOT FD', fd)
+        with socket(AF_INT, SOCK_STREAM, fileno=fd) as client:
+            while True:
+                msg = client.recv(1024)
+                if not msg:
+                    break
+                print('WORKER: RECV {!r}'.format(msg))
+                client.send(msg)
+                
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) !=2:
+        print('Usage:worker.py server_address', file=sys.stderr)
+        raise SystemExit(1)
+        
+    worker(sys.argv[1])
+"""
+To run the worker, you would type python3 workermp.py /tmp/servconn
+The resulting operation should be exactly the same as the example that used Pipe().
+
+Under the covers, file descriptor passing involves creating a UNIX domain socket and the "sendmsg()" method of sockets. Since this technique is not widely known, here is a different implementation of the server that shows how to pass descriptors using sockets:
+"""
+# server.py
+import socket
+import struct
+
+def send_fd(sock, fd):
+    """
+    Send a single file descriptor.
+    """
+    sock.sendmsg([b'x'], [(socket.SOL_SOCKET, socket.SCM_RIGHTS, struct.pack('i', fd))])
+    ack = sock.recv(2)
+    assert ack == b'OK'
+    
+def server(work_address, port):
+    #Wait for the worker to connect
+    work_serv = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    work_serv.bind(work_address)
+    work_serv.listen(1)
+    worker, addr = work_serv.accept()
+    
+    # Now run a TCP/IP server and send clients to worker
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
+    s.bind(('',port))
+    s.listen(1)
+    while True:
+    client, addr = s.accept()
+    print('SERVER: Got connection from', addr)
+    send_fd(worker, client.fileno())
+    client.close()
+    
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) != 3:
+        print('Usage: server.py server_address port', file=sys.stderr)
+        raise SystemExit(1)
+    
+    server(sys.argv[1], int(sys.argv[2]))
+
+
+"""
+Here's an implementation of the worker using sockets:
+"""
+# worker.py
+import socket
+import struct
+
+def recv_fd(sock):
+    """
+    Receive a single file descriptor
+    """
+    msg, ancdata, flags, addr = sock.recvmsg(1, socket.CMSG_LEN(struct.calcsize('i')))
+    # Line space because the authors thought it looked pretty
+    cmsg_level, cmsg_type, cmsg_data = ancdata[0]
+    assert cmsg_level == socket.SOL_SOCKET and cmsg_type == socket.SCM_RIGHTS
+    sock.sendall(b'OK')
+    return struct.unpack('i', cmsg_data)[0]
+    
+def worker(server_address):
+    serv = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    serv.connect(serv_address)
+    while True:
+        fd = recv_fd(serv)
+        print('WORKER: GOT FD', fd)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM, fileno=fd) as client:
+            while True:
+                msg = client.recv(1024) # I don't yet understand the significance of .recv(1024)
+                if not msg:
+                    break
+                print('WORKER: RECV {!r}'.format(msg))
+                client.send(msg)
+
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) != 2:
+        print('Usage: worker.py server_address', file=sys.stderr)
+        raise SystemExit(1)
+        
+    worker(sys.argv[1])
+
+# Next steps: Unix Network Programming by W. Ricard Stevens (Prentice Hall, 1990). Passing file descriptors on Windows uses a different technique than Unix (not shown). For that platform, study the source code to multiprocessing.reduction in close detail to see how it works.
+    
