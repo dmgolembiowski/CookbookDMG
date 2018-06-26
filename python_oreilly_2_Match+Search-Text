@@ -1,0 +1,96 @@
+"""
+Problem: You wanna match or search text for a specific pattern.
+Soln: If the text you're tryin to match is a simple literal, you can often just use the basic string methods,
+such as str.fin(), str.endswith(), str.startswith, etc.
+But for more complicated matching, use regular expressions and the "re" module. To see how this works, pretend you want
+to match dates specified as digists, such as "11/27/2012." Then...
+"""
+>>> text1 = '11/27/2012'
+>>> text2 = 'Nov 27, 2012'
+>>> 
+>>> import re
+>>> # Simple matching: \d+ means match one or more digits
+>>> if re.match(r'\d+/\d+/\d+', text1):
+...     print('yes')
+... else:
+...     print('no')
+...
+yes
+>>> if re.match(r'\d+/\d+/\d+', text2):
+...     print('yes')
+... else:
+...     print('no')
+...
+no
+>>>
+
+"""
+If you plan to perform a lot of matches using the same pattern, it helps to precompile the regular expression pattern
+into a pattern object first. For example:
+"""
+>>> datepat = re.compile(r'\d+/\d+/\d+')
+# However, it could be better to use line 33's capture groups b/c they might simplify following processes of the matched text because contents of each group can be extracted individually! Like month, day, year, etc...
+# >>> datepat = re.compile(r'(\d+)/(\d+)/(\d+)')
+# See what happens @Line XX after Line 33 is implemented
+>>> if datepat.match(text1):
+...     print('yes')
+... else:
+...     print('no')
+...
+yes
+>>> if datepat.match(text2):
+...     print('yes')
+... else:
+...     print('no')
+...
+no
+>>>
+
+# Now, observe what we alluded to in Lines 32-34:
+>>> datepat = re.compile(r'(\d+)/(\d+)/(\d+)')
+>>> m = datepat.match('11/27/2012')
+>>> m
+<_sre.SRE_Match object at 0x1005d2750>
+
+# Now to extract the positional contents:
+>>> m.group(0)
+'11/27/2012'
+>>> m.group(1)
+'11'
+>>> m.group(2)
+'27'
+>>> m.group(3)
+'2012'
+>>> m.groups()
+('11', '27', '2012')
+>>> month, day, year = m.groups()
+>>>
+
+>>> # Final all matches (notice splitting into tuples)
+>>> text
+'Today is 11/27/2012. Pycon starts 3/13/2013.'
+>>> datepat.findall(text)
+>>> datepat.findall(text)
+[('11', '27', '2012'), ('3', '12', '2013')]
+>>> for month, day, year in datepat.findall(text):
+...     print('{}-{}-{}'.format(year, month, day))
+...
+2012-11-27
+2013-3-13
+>>>
+
+# Example using finditer(): method instead of findall(): method
+>>> for m in datepat.finditer(text):
+...     print(m.groups())
+...
+('11', '27', '2012')
+('3', '13', '2013')
+>>>
+""" Warning: it's ok to use r'(\d+)/(\d+)/(\d+)' provided that it's a raw string b/c otherwise the backslashes will be interpreted.
+Otherwise, you might need r'(\\d+)/(\\d+)/(\\d+)'
+^This is a huge generalization and might be misleading. Use with caution.
+"""
+
+
+
+
