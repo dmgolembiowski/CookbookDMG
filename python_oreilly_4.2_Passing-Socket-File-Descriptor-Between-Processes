@@ -1,8 +1,13 @@
 """
 (Go back to 4.1 for context if needed)
-Passing file descriptors between processes is something many programmers don't realize is possible. But, it can sometimes help with building scalable systems. For ex, on a multicore machine, you could have multiple instances of the Python interpreter and use file descriptor passing to more evenly balance the number of clients being handled by each interpreter.
+Passing file descriptors between processes is something many programmers don't realize is possible. 
+But, it can sometimes help with building scalable systems. 
+For example, on a multicore machine, you could have multiple instances of the Python interpreter and use file descriptor 
+passing to more evenly balance the number of clients being handled by each interpreter.
 
-The send_handle() and recv_handle() functions shown in 4.1's solution really only work with multiprocessing connections. Instead of using a pipe, you can connect in-sockets or Windows pipes. I.E. you could implement the server and worker as completely separate programs to be started separately:
+The send_handle() and recv_handle() functions shown in 4.1's solution really only work with multiprocessing connections. 
+Instead of using a pipe, you can connect in-sockets or Windows pipes. 
+I.E. you could implement the server and worker as completely separate programs to be started separately:
 """
 # servermp.py
 from multiprocessing.connection import Listener
@@ -70,7 +75,9 @@ if __name__ == '__main__':
 To run the worker, you would type python3 workermp.py /tmp/servconn
 The resulting operation should be exactly the same as the example that used Pipe().
 
-Under the covers, file descriptor passing involves creating a UNIX domain socket and the "sendmsg()" method of sockets. Since this technique is not widely known, here is a different implementation of the server that shows how to pass descriptors using sockets:
+Under the covers, file descriptor passing involves creating a UNIX domain socket and the "sendmsg()" method of sockets. 
+Since this technique is not widely known, here is a different implementation of the server that shows how to pass 
+descriptors using sockets:
 """
 # server.py
 import socket
@@ -152,5 +159,7 @@ if __name__ == '__main__':
         
     worker(sys.argv[1])
 
-# Next steps: Unix Network Programming by W. Ricard Stevens (Prentice Hall, 1990). Passing file descriptors on Windows uses a different technique than Unix (not shown). For that platform, study the source code to multiprocessing.reduction in close detail to see how it works.
+# Next steps: Unix Network Programming by W. Ricard Stevens (Prentice Hall, 1990). Passing file descriptors on 
+# Windows uses a different technique than Unix (not shown). 
+# For that platform, study the source code to multiprocessing.reduction in close detail to see how it works.
     
