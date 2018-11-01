@@ -145,7 +145,7 @@ def worker(server_address):
         print('WORKER: GOT FD', fd)
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM, fileno=fd) as client:
             while True:
-                msg = client.recv(1024) # I don't yet understand the significance of .recv(1024)
+                msg = client.recv(1024)
                 if not msg:
                     break
                 print('WORKER: RECV {!r}'.format(msg))
