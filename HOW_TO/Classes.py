@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Logic Statements"""
+"""Proceed to line ## for a frustrating shortcut"""
 
 # Suppose the following are applicable for a class called Book:
 class Novel:
@@ -37,3 +37,15 @@ old ISBN numbers. Here's how you'd do it.
 
 isbn_Product = SME.ISBN * LWW.ISBN
 print(isbn_Product)
+
+"""
+Okay, this is the part that makes me wonder deeply saddened.
+We can also define classes using single one-liners...
+"""
+from collections import namedtuple
+Novel = namedtuple('Novel',['Title', 'Author', 'ISBN', 'rating'])
+# That was basically the init method
+# Now here's the instantiation with the same objects
+LWW = Novel("The Chronicles of Narnia: The Lion, the Witch, and the Wardrobe", "C.S. Lewis", '9780064404990')
+SME = Novel("The Shaping of Middle-Earth", "J.R.R. Tolkien", '0345400437')
+# Then see what happens when you just type LWW.Author
