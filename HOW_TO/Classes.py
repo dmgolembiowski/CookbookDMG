@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Proceed to line ## for a frustrating shortcut"""
+"""Proceed to line 45 for a frustrating shortcut"""
 
 # Suppose the following are applicable for a class called Book:
 class Novel:
