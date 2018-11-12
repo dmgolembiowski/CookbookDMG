@@ -32,3 +32,5 @@ Ran 1 test in 4.793s
 
 OK
 """
+# An extended example incorporating the java webdriver is available at:
+# https://selenium-python.readthedocs.io/getting-started.html
