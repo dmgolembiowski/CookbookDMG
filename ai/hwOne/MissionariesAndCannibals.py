@@ -40,8 +40,10 @@ class MandC(Problem):
         of the boat is on the left side of the river, and 
         is False when the boat is on the right side.
         
-        The datastructure that returns callable, legal actions
-        in `results()` for a given state.
+        The data structure that returns callable, legal actions
+        in `results()` for a given state depends on the action 
+        passed to it from search.py, where "action" is
+        denoted by its name as a string.
         """
         action_list = list()
 
