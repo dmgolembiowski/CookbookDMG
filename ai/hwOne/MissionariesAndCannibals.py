@@ -5,33 +5,29 @@ Dr. Andrew Watkins
 David Golembiowski
 January 24, 2019
 
-This file implements the missionaries and cannibals problem using
-the problem class specfied for the AIMA python search.py file
+This file implements the missionaries and cannibals problem
+using the problem class specified for the AIMA python search.py
+file.
 
-It then finds solutions to this problem using 2 different search algorithms:
+It then finds solutions to this problem using 2 different
+search algorithims:
 Depth First and Breadth First
 """
-
 from search import *
 from collections import deque
-from utils import *
 
 class MandC(Problem):
     """ This is the Missionaries and Cannibals Problem
     it's inherited from the Problem class (see search.py).
     """
-    def __init__(self, initial, goal, state):
+    def __init__(self, initial, goal):
         #You need to decide if more info is needed in the constructor
         #if so, then add another parameter to the constructor
         
         #call ths parent class's constructor
         Problem.__init__(self,initial,goal) 
         
-        #initialize any other information...if needed
-        self.possible_actions = {}
-        self.state = state
-
-    def actions(self,state):
+    def actions(self, state):
         # This method should return a set of legal actions from
         # the current state
         """
@@ -43,227 +39,205 @@ class MandC(Problem):
         boolean assignment whose value is True if the location
         of the boat is on the left side of the river, and 
         is False when the boat is on the right side.
+        
+        The datastructure that returns callable, legal actions
+        in `results()` for a given state.
         """
-        action_list = {}
+        action_list = list()
 
         # Send one missionary from left to right
         if all([
-            self.state[4] == True,
-            self.state[0] >= 1,
-            self.state[2]+1 >= self.state[3],
-            self.state[0]-1 >= self.state[1]]):
-            action_list['send_one_missionary'] = tuple([
-                self.state[0]-1,
-                self.state[1],
-                self.state[2]+1,
-                self.state[3], 
-                False])
-
+            state[4] == True,
+            state[0] >= 1,
+            state[2]+1 >= state[3],
+            state[0]-1 >= state[1]]):
+            action_list.append('send_one_missionary')
+        
         # Send two missionaries from left to right
         if all([
-            self.state[4] == True,
-            self.state[0] >= 2,
-            self.state[2] +2 >= self.state[3],
-            self.state[0]-2 >= self.state[1]]):
-            action_list['send_two_missionaries'] = tuple([
-                self.state[0]-2,
-                self.state[1],
-                self.state[2]+2,
-                self.state[3],
-                False])
+            state[4] == True,
+            state[0] >= 2,
+            state[2] +2 >= state[3],
+            state[0] -2 >= state[1] if not state[0]-2 == 0 else True]):
+            action_list.append('send_two_missionaries')
 
         # Send one cannibal from left to right
         if all([
-            self.state[4] == True,
-            self.state[1]>=1,
-            self.state[3]+1 <= self.state[2] or self.state[2] == 0]):
-            ### fix this back
-            action_list['send_one_cannibal'] = tuple([
-                self.state[0],
-                self.state[1]-1,
-                self.state[2],
-                self.state[3]+1,
-                False]) 
+            state[4] == True,
+            state[1] -1 <= state[0],
+            state[1] >= 1,
+            any([state[3]+1 <= state[2] if state[2] != 0 else True, 
+                state[3] + 1 <= state[2] if not state[2] >= state[3]+1 else True])]):
+            #state[3] +1 <= state[2]]):
+            action_list.append('send_one_cannibal')
 
-        # Send two cannibals from left to right 
+        # Send two cannibals from left to right
         if all([
-            self.state[4] == True,
-            self.state[1] >= 2,
-            self.state[3]+2 <= self.state[2] or self.state[2] == 0]):
-            action_list['send_two_cannibals'] = tuple([
-                self.state[0],
-                self.state[1] -2,
-                self.state[2],
-                self.state[3] + 2,
-                False])
+            state[4] == True,
+            state[1] >= 2,
+            state[3] + 2 <= state[2] if not state[2] == 0 else True]):
+            action_list.append('send_two_cannibals')
 
-        # Send one missionary and one cannibal from left to right 
+        # Send one missionary and one cannibal from left to right
         if all([
-            self.state[4] == True,
-            self.state[2] +1 >= self.state[3] + 1, 
-            self.state[0] -1 >= self.state[1] -1]):
-            action_list['send_one_each'] = tuple([
-                self.state[0]-1, 
-                self.state[1]-1, 
-                self.state[2]+1, 
-                self.state[3]+1,
-                False])
+            state[4] == True,
+            state[0] >= 1,
+            state[1] >= 1,
+            state[0] - 1 >= state[1] - 1,
+            state[2] +1 >= state[3] +1]):
+            action_list.append('send_one_each')
 
         # Return one missionary from right to left
         if all([
-            self.state[4] == False,
-            self.state[2] >= 1,
-            self.state[0] +1 >= self.state[1],
-            self.state[2]-1 >= self.state[3]]):
-            action_list['return_one_missionary'] = tuple([
-                self.state[0] + 1, 
-                self.state[1],
-                self.state[2] - 1,
-                self.state[3],
-                True])
+            state[4] == False,
+            state[2] >= 1,
+            state[2] -1 >= state[3] if state[2]-1 != 0 else True,
+            state[0] +1 >= state[1]]):
+            action_list.append('return_one_missionary')
 
-        # Return two missionaries from right to left 
+        # Return two missionaries from right to left
         if all([
-            self.state[4] == False,
-            self.state[2]>=2,
-            self.state[0]+2 >= self.state[1],
-            self.state[2]-2 >= self.state[3]]):
-            action_list['return_two_missionaries'] = tuple([
-                self.state[0] + 2,
-                self.state[1],
-                self.state[2] - 2,
-                self.state[3],
-                True])
+            state[4] == False,
+            state[2] >= 2,
+            state[0] +2 >= state[1],
+            state[2] -2 >= state[3] if state[2]-2 != 0 else True]):
+            action_list.append('return_two_missionaries')
 
-        # Return one cannibal from right to left
+        # Return one cannibal from right to left 
         if all([
-            self.state[4] == False,
-            self.state[3] >= 1,
-            self.state[1] +1 <= self.state[0] or self.state[0] == 0]):
-            action_list['return_one_cannibal'] = tuple([
-                self.state[0],
-                self.state[1] + 1,
-                self.state[2],
-                self.state[3] - 1,
-                True])
+            state[4] == False,
+            state[3] >= 1,
+            state[1] +1 <= state[0] if state[0] != 0 else True]):
+            action_list.append('return_one_cannibal')
 
         # Return two cannibals from right to left 
         if all([
-            self.state[4] == False,
-            self.state[3] >= 2, 
-            self.state[1] +2 <= self.state[0] or self.state[0] == 0]):
-            action_list['return_two_cannibals'] = tuple([
-                self.state[0],
-                self.state[1]+2,
-                self.state[2],
-                self.state[3]-2,
-                True])
+            state[4] == False,
+            state[3] >= 2,
+            state[1]+2 <= state[0] if state[0] != 0 else True]):
+            action_list.append('return_two_cannibals')
 
         # Return one missionary and one cannibal from right to left
         if all([
-            self.state[4] == False,
-            self.state[2] >= 1,
-            self.state[3] >= 1,
-            self.state[0]+ 1 >= self.state[1] + 1,
-            self.state[2] - 1 >= self.state[3]-1]):
-            action_list['return_one_each'] = tuple([
-                self.state[0]+1,
-                self.state[1]+1,
-                self.state[2]-1,
-                self.state[3]-1,
-                True])
+            state[4] == False,
+            state[2] >= 1,
+            state[3] >= 1,
+            state[2] -1 >= state[3] - 1 if state[0] != 0 else True, #maybe trivial case
+            state[0] +1 >= state[1]+1]):
+            action_list.append('return_one_each')
 
         return action_list
-    
-    def result(self, state, action):
-        # This method returns the new state after applying action to state
-        print('state:',state, 'action:',action)
-        return self.evaluate_newstates(action)
 
-    # are there additional methods you'd like to define to help solve this problem?
-    def evaluate_newstates(self, action):
-        newstate = {
-            'send_one_missionary':tuple([
-                self.state[0]-1,
-                self.state[1],
-                self.state[2]+1,
-                self.state[3], 
-                False]),
-            'send_two_missionaries': tuple([
-                self.state[0]-2,
-                self.state[1],
-                self.state[2]+2,
-                self.state[3],
-                False]),
-            'send_one_cannibal': tuple([
-                self.state[0],
-                self.state[1]-1,
-                self.state[2],
-                self.state[3]+1,
-                False]),
-            'send_two_cannibals': tuple([
-                self.state[0],
-                self.state[1]-2,
-                self.state[2],
-                self.state[3] +2,
-                False]),
-            'send_one_each': tuple([
-                self.state[0]-1, 
-                self.state[1]-1, 
-                self.state[2]+1, 
-                self.state[3]+1,
-                False]),
-            'return_one_missionary': tuple([
-                self.state[0] + 1, 
-                self.state[1],
-                self.state[2] - 1,
-                self.state[3],
-                True]),
-            'return_two_missionaries': tuple([
-                self.state[0] + 2,
-                self.state[1],
-                self.state[2] - 2,
-                self.state[3],
-                True]),
-            'return_one_cannibal': tuple([
-                self.state[0],
-                self.state[1] + 1,
-                self.state[2],
-                self.state[3] - 1,
-                True]),
-            'return_two_cannibals': tuple([
-                self.state[0],
-                self.state[1]+2,
-                self.state[2],
-                self.state[3]-2,
-                True]),
-            'return_one_each': tuple([
-                self.state[0]+1,
-                self.state[1]+1,
-                self.state[2]-1,
-                self.state[3]-1,
-                True])}
-        return newstate[action]
-    
-    
-#Now you should test this:
-    
+    def result(self, state, action):
+        """
+        `getattr(self, action)(state) returns the unspecified "name"  attribute
+        from mc.actions() list entries, which is a placeholder for any of 
+        the MandC class definitions that relate to generating a new state, such
+        as `send_one_cannibal()`, which then accepts an environment state to be
+        passed as its "state" parameter.
+
+        It returns the "next" state to be accepted by the "next" assignment 
+        statement in search.py
+        """
+        next = getattr(self, action)(state)
+        return next
+
+    def send_one_missionary(self, state):
+        next = (
+            state[0]-1,
+            state[1],
+            state[2]+1,
+            state[3],
+            False)
+        return next
+
+    def send_two_missionaries(self, state):
+        next = (
+            state[0]-2,
+            state[1],
+            state[2]+2,
+            state[3],
+            False)
+        return next
+
+    def send_one_cannibal(self, state):
+        next = (
+            state[0],
+            state[1]-1,
+            state[2],
+            state[3]+1,
+            False)
+        return next
+
+    def send_two_cannibals(self, state):
+        next = (
+            state[0],
+            state[1]-2,
+            state[2],
+            state[3]+2,
+            False)
+        return next
+
+    def send_one_each(self, state):
+        next = (
+            state[0]-1,
+            state[1]-1,
+            state[2]+1,
+            state[3]+1,
+            False)
+        return next
+
+    def return_one_missionary(self, state):
+        next = (
+            state[0]+1,
+            state[1],
+            state[2]-1,
+            state[3],
+            True)
+        return next
+
+    def return_two_missionaries(self, state):
+        next = (
+            state[0]+2,
+            state[1],
+            state[2]-2,
+            state[3],
+            True)
+        return next
+
+    def return_one_cannibal(self, state):
+        next = (
+            state[0],
+            state[1]+1,
+            state[2],
+            state[3]-1,
+            True)
+        return next
+
+    def return_two_cannibals(self, state):
+        next = (
+            state[0],
+            state[1]+2,
+            state[2],
+            state[3]-2,
+            True)
+        return next
+
+    def return_one_each(self, state):
+        next = (
+            state[0]+1,
+            state[1]+1,
+            state[2]-1,
+            state[3]-1,
+            True)
+        return next
+
 def main():
-    """
-    -Define `initial_state` for mc as 
-    [num_Missionaries_L = 3, num_Cannibals_L = 3,
-        num_Missionaries_R = 0, num_Cannibals_R = 0,
-        boat_location_Left = True] and 
-    
-    -Define `goal_state` for mc as
-    [num_Missionaries_L = 0, num_Cannibals_L = 0,
-        num_Missionaries_R = 3, num_Cannibals_R = 3,
-        boat_location_Left = False]
-    """
+    # Initialize with 3 missionaries and 3 cannibals on the left side
     initial_state = (3,3,0,0,True)
     goal_state = (0,0,3,3,False)
-    mc = MandC(initial=initial_state, goal=goal_state, state=initial_state)
-    #???some_actions = mc.actions(mc.state)
+    
+    mc = MandC(initial=initial_state, goal=goal_state)
 
     soln = depth_first_graph_search(mc)
     print("Depth First Search")
