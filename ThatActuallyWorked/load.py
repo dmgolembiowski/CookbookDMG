@@ -21,10 +21,10 @@ def database_tables():
     """ 
 
     # SQL Auth
-    SERVER = "iecsa0600"
-    USER = "iec\\dgolembiowski"
-    PASSWORD = "Password1"
-    DATABASE = "099"
+    SERVER = ""
+    USER = ""
+    PASSWORD = ""
+    DATABASE = ""
     
     def grab_imitmidx():
         return """
