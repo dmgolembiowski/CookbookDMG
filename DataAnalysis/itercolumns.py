@@ -43,13 +43,25 @@
                 3     0  1.481899 -0.815123
                 4     0 -0.194633 -1.099265
     """
-    dataframe_columns = {}
-    for frame in dataframe.itertuples():
-        columnsList = list(frame._asdict())
-        break
-    i = 0
-    while i < len(columnsList):
-        dataframe_columns[columnsList[i]] = i
-        i += 1
-
-    return dataframe_columns
+    def itercolumns(dataframe, *colName):
+        if len(list(colName)) > 1:
+            raise ValueError('*colName cannot accept more than one column name')
+        dataframe_columns = {}
+        if len(colName) == 1:
+            for frame in dataframe.itertuples():
+                columnsList = list(frame._asdict())
+                break
+            i = 0
+            while i < len(columnsList):
+                dataframe_columns[columnsList[i]] = i
+                i += 1
+            return dataframe_columns
+        else:
+            for frame in dataframe.itertuples():
+                columnsList = list(frame._asdict())
+                break
+            i = 0
+            while i < len(columnsList):
+                dataframe_columns[columnsList[i]] = i
+                i += 1
+            return dataframe_columns[colName]
