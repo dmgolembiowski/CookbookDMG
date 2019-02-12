@@ -1,3 +1,5 @@
+    import numpy as np
+    import pandas as pd
     """ 
     `itercolumns(pandas.DataFrame)` is a meaningful way to
     evaluate frames of pandas.DataFrame.itertuples() objects if
