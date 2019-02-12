@@ -47,7 +47,7 @@
         if len(list(colName)) > 1:
             raise ValueError('*colName cannot accept more than one column name')
         dataframe_columns = {}
-        if len(colName) == 1:
+        if len(colName) == 0:
             for frame in dataframe.itertuples():
                 columnsList = list(frame._asdict())
                 break
