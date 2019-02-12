@@ -64,4 +64,4 @@
             while i < len(columnsList):
                 dataframe_columns[columnsList[i]] = i
                 i += 1
-            return dataframe_columns[colName]
+            return dataframe_columns[colName[0]]
