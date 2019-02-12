@@ -7,14 +7,22 @@
     when iterating over pandas.DataFrame.itertuples()
     the pandas.core.frame in the iteration loses a previously
     accurate tuple position in the frame.
-
-    Derive from:
+    In English:
+        This method makes it possible to prepare data analysis 
+        scripts that are resilient to fluctuating SQL databases 
+        that keep the same column names, however their column
+        slice can change as a result of adding or dropping a table.
+        
+    Input:
         Pandas(Index=0, component_item='E000404-C01',ID=10217.0)
     
-    Returning:
+    Output:
         {'Index': 0, 'component_item': 1, 'ID': 2}
     
-    In addition to possibly fluctuating Macola SQL tables, this method specificially
+    This method makes it possible to prepare data analysis scripts that are resilient to 
+    fluctuating SQL databases that keep longstanding table column names, however their tuple slice location
+    is uncertain.
+    
         In [0]: import numpy as np
         In [1]: import pandas as pd
         In [2]: df = pd.DataFrame({'foo1' : np.random.randn(5),'foo2' : np.random.randn(5)})
