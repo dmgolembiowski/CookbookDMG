@@ -1,0 +1,61 @@
+Flow Control:
+
+load.py
+1. bom, children = load.main()
+    A. imitmidx_sql, iminvloc_sql, bmprdstr_sql, sfdtlfil_sql = database_tables()
+    B. Local_Connection = write_local_tables(imitmidx_sql, iminvloc_sql, bmprdstr_sql, sfdtlfil_sql)
+    C. imitmidx_sql, iminvloc_sql, bmprdstr_sql, sfdtlfil_sql = read_local_tables(Local_Connection)
+    D. billOfMaterials, children = processing.main(imitmidx_sql, iminvloc_sql, bmprdstr_sql, sfdtlfil_sql)
+
+processing.py
+2. billOfMaterials, children = processing.main(imitmidx_sql, iminvloc_sql, bmprdstr_sql, sfdtlfil_sql)
+    A. parent_item = input("Enter the parent item number: ")
+    B. children = get_children(parent_item, bmprdstr_sql)
+    C. children = process_descriptions(children, imitmidx_sql)
+    D. children = get_costs(children, iminvloc_sql)
+    E. children = process_bill(children, bmprdstr_sql)
+    F. <Putting children into bill>
+    G. billOfMaterials = billOfMaterials[['ID', 'item_no', 'description', 'qty_per_par', 'avg_cost', 'last_cost', 'level', 'parent_ID', 'kids_IDs', 'labor_hours', 'manufactured', 'true_cost']]
+    H. billOfMaterials, shopOrder = furtherProcessing.main(billOfMaterials, sfdtlfil_sql)
+        furtherProcessing.py
+        i. sfdtlfil_sql = afterepoch(sfdtlfil_sql)
+        ii. sfdtlfil_sql = NoneToManufactured(sfdtlfil_sql)
+        iii. billOfMaterials = 
+    I. return billOfMaterials, children
+    
+load.py
+3.
+    A.
+    B.
+    C.
+    D.
+    E.
+    
+4.
+    A.
+    B.
+    C.
+    D.
+    E.
+    
+5.
+    A.
+    B.
+    C.
+    D.
+    E.
+    
+6.
+7.
+8.
+9.
+10.
+11.
+12.
+13.
+14.
+15.
+16.
+17.
+18.
+19.
