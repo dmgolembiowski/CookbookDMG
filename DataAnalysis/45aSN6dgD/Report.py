@@ -57,18 +57,14 @@ class Inventory:
             Inventory.IDs.append(id)
 
 class Material(Inventory):
+    def __init__(self, bom_Dataframe, *IDs, **materialArgs):
+        pass
+
     def __new__(material):
         #self = super().__new__(_, bom_Dataframe)
         for ID in Inventory.IDs:
-            super().__init__(material.ID = ID
-            return material.ID
-
-
-
-
-    
-    
-
+            pass
+        # Override 
         '''
         self.ID = self.bom_Dataframe["ID"]
         self.item_no = self.bom_Dataframe["item_no"].strip(' ')
