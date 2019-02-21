@@ -14,7 +14,7 @@ def process_descriptions(children, imitmidx_sql):
     def description_composition(desc_One, desc_Two):
         s1 = desc_One if type(desc_One) is str else ""
         s2 = desc_Two if type(desc_Two) is str else ""
-        return s1 + ", " + s2 if s1 and s2 else s1+s2
+        return s1.rstrip() + ", " + s2 if s1 and s2 else s1+s2
 
     list_o_item_no = [children[k]["item_no"].strip(' ') for k in list(children)]
     # Gather abstracted magic numbers
@@ -104,8 +104,9 @@ def get_children(current_item, bmprdstr_sql, imitmidx_sql):
     #explored = set() #MARKED FOR REMOVAL
     visited = []
     frontier = deque()
-    takenIDs = [-1]
-
+    takenIDs = [-1,0]
+    frontier.append(children)
+    originalParent = children
     # Rename to `next_generation()`
     def next_generation(ID = 0, level=0, df=bmprdstr_sql, master=imitmidx_sql.to_dict()):    
         """
@@ -153,25 +154,18 @@ def get_children(current_item, bmprdstr_sql, imitmidx_sql):
 
         # Give the child ID's to the parent object
         while frontier:
-            this_child = frontier.popleft()
+            try:
+                this_child = frontier.popleft()
+                key = list(this_child)[0]
+                current_child = this_child[key]
+                current_parent_ID = current_child['parent_ID']
+                children[current_parent_ID]['kids_IDs'].append(current_child['ID'])
 
-            key = list(this_child)[0]
-
-            current_child = this_child[key]
-            current_parent_ID = current_child['parent_ID']
-
-            """ Added for debugging purposes; please keep
-            {ID:{'ID':ID,'item_no':row[3].strip(' '),'description':nan,'qty_per_par':row[4],'avg_cost':nan,'last_cost':nan,'level':level,'parent_ID':current_parent_ID,'kids_IDs':[]}}
-            print("children[current_parent_ID]['kids_IDs'] = ",children[current_parent_ID]['kids_IDs'])
-            print("type(children[current_parent_ID]['kids_IDs']) = ", type(children[current_parent_ID]['kids_IDs']))
-            input()
-            """
-
-            children[current_parent_ID]['kids_IDs'].append(current_child['ID'])
-
-            visited.append(this_child)
-            print('visited.append(current_child)',visited)
-            children.update(this_child)
+                visited.append(this_child)
+                #print('visited.append(current_child)',visited)
+                children.update(this_child)
+            except KeyError:
+                pass
 
         """ 
         The next logical step is to retrieve succcessors to the child objects by
@@ -184,27 +178,13 @@ def get_children(current_item, bmprdstr_sql, imitmidx_sql):
             children.update(child)
             childID = list(child)[0]
             child = child[childID]
-            print(children)
+            #print(children)
             next_generation(ID=childID, level=child['level'])
 
     next_generation()
+    children.update(originalParent)
     return children
-# Marked for removal
-'''
-def purchasedManufacturedDetail(imitmidx_sql, sfdtlfil_sql, children):
-    number_rows_imitmidx = len(imitmidx_sql)
-    number_rows_sfdtlfil_sql = len(sfdtlfil_sql)
 
-    item_master = imitmidx_sql.to_dict('dict')
-    shop_master = sfdtlfil_sql.to_dict('dict')
-    
-    imitmidx_sql_manufactured = {}
-    imitmidx_sql_purchased = {}
-    
-    sfdtlfil_sql_manufactured = {}
-    sfdtlfil_sql_purchased = {}
-    #a = set(X.strip(' ') for X in [x if type(x) is str else "" for x in sfd['out_item_no']])
-'''
 
 def main(imitmidx_sql, iminvloc_sql, bmprdstr_sql, sfdtlfil_sql):
     """
@@ -231,14 +211,6 @@ def main(imitmidx_sql, iminvloc_sql, bmprdstr_sql, sfdtlfil_sql):
 
     # Correctional punishment to billOfMaterials for not having its headers 
     # in the order originally prescribed
-    billOfMaterials = billOfMaterials[['ID', 'item_no', 'description', 'qty_per_par', 'avg_cost', 'last_cost', 'level', 'parent_ID', 'kids_IDs', 'labor_hours', 'pur_or_man', 'true_cost']]
+    billOfMaterials = billOfMaterials[['ID', 'item_no', 'description', 'qty_per_par', 'avg_cost', 'last_cost', 'level', 'parent_ID', 'kids_IDs', 'labor_hours', 'pur_or_mfg']]
 
-    """
-    Potential Process Flow:
-
-
-
-    """
-
-
-    return billOfMaterials
+    return billOfMaterials, children
