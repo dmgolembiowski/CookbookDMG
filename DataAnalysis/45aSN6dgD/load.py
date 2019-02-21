@@ -7,6 +7,7 @@ import numpy as np
 import pymssql
 import os
 import processing
+import furtherProcessing
 from furtherProcessing import afterepoch
 import Report
 
@@ -18,18 +19,13 @@ def database_tables():
     `database_tables()` retrieves three pandas data frame objects of 
     the tables retrieved from the iecsa0600_099 database.
     Should return three separate objects: imitmidx_sql, iminvloc_sql, and bmprdstr_sql tables.
-    
-    Functions:
-    `grab_imitmidx()`: SELECT item_no, item_desc_1, item_desc_2 FROM imitmidx_sql ORDER BY item_no;
-    `grab_iminvloc()`: SELECT item_no, avg_cost, last_cost FROM iminvloc_sql ORDER BY item_no;
-    `grab_bmprdstr()`: SELECT item_no, comp_item_no, alt_item_no, qty_per_par FROM bmprdstr_sql ORDER BY item_no;
     """ 
 
     # SQL Auth
     SERVER = ""
     USER = ""
     PASSWORD = ""
-    DATABASE = "099"
+    DATABASE = ""
     
     def grab_imitmidx():
         return """
@@ -182,15 +178,26 @@ def main():
     BillOfMaterials = processing.main(imitmidx_sql, iminvloc_sql, bmprdstr_sql)
     return BillOfMaterials"""
     billOfMaterials, children = processing.main(imitmidx_sql, iminvloc_sql, bmprdstr_sql, sfdtlfil_sql)
-
+    breakpoint()
     print(billOfMaterials) # Marked for removal
+    #billOfMaterials, children = furtherProcessing.main(billOfMaterials, children, sfdtlfil_sql, bmprdstr_sql, imitmidx_sql, iminvloc_sql)
+    
+    sysargForGenReport = False
+    if sysargForGenReport:
+        bom_report = Report.BOMReport(billOfMaterials, imitmidx_sql, iminvloc_sql, sfdtlfil_sql, bmprdstr_sql)
+        bom_report.output()
 
-    bom_Report = pd.DataFrame(data=billOfMaterials, columns=["ID", "qty_per_par", "item_no", "kids_IDs"])
-    bom_Report = bom_Report[["ID", "qty_per_par", "item_no", "kids_IDs"]]
-    bom_Report = Report.BOMReport(bom_Report)
+    # Starts the cost-reporting functionality
+    inventory = Report.Inventory(bom_Dataframe=billOfMaterials, bom_Dict=children)
+    item = Report.Item.item
+    """
+    Members of the Item class can also be accessed from 
 
-    return billOfMaterials, children
 
+    #bom_Report = Report.BOMReport(bom_Report)
+
+    return billOfMaterials, children, materials
+    """
 if __name__ == "__main__":
     main()
 
